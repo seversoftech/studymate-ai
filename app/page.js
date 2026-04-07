@@ -562,7 +562,7 @@ export default function HomePage() {
             <div className="feat-item">
               <span className="feat-icon">📊</span>
               <h4>Export Pro</h4>
-              <p>One-click professional PDF formatting.</p>
+              <p>One-click PDF formatting.</p>
             </div>
           </div>
         </section>
@@ -574,9 +574,9 @@ export default function HomePage() {
               <span className="logo-text small">StudyMate AI</span>
             </div>
             <div className="footer-links">
-              <a href="#">Security</a>
-              <a href="#">Privacy</a>
-              <a href="#">Status</a>
+              <a href="/security">Security</a>
+              <a href="/privacy">Privacy</a>
+              <a href="/status">Status</a>
             </div>
           </div>
           <p className="copyright">© 2026 StudyMate AI.</p>

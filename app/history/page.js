@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Header from '../components/Header';
 import QuizOutput from '../components/QuizOutput';
 import MermaidChart from '../components/MermaidChart';
+import Link from 'next/link';
 
 export default function HistoryPage() {
   const [history, setHistory] = useState([]);
@@ -299,6 +300,21 @@ export default function HistoryPage() {
             </div>
           </div>
         </main>
+
+        <footer className="footer-v2">
+          <div className="footer-top">
+            <div className="logo-group">
+              <div className="logo-icon small" aria-hidden="true">🧠</div>
+              <span className="logo-text small">StudyMate AI</span>
+            </div>
+            <div className="footer-links">
+              <Link href="/security">Security</Link>
+              <Link href="/privacy">Privacy</Link>
+              <Link href="/status">Status</Link>
+            </div>
+          </div>
+          <p className="copyright">© 2026 StudyMate AI.</p>
+        </footer>
       </div>
 
       <style jsx>{`
@@ -384,6 +400,9 @@ export default function HistoryPage() {
         .preview-source-text { padding: 16px; background: rgba(255, 255, 255, 0.02); border-left: 3px solid var(--border); font-size: 14px; font-style: italic; color: var(--text-secondary); line-height: 1.6; margin-bottom: 24px; border-radius: 0 8px 8px 0; }
         .preview-divider { height: 1px; background: var(--border); margin: 32px 0; position: relative; }
         .preview-divider::after { content: 'AI Result'; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); background: var(--bg-card); padding: 0 16px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); }
+
+        .footer-v2 { padding: 80px 0 40px; border-top: 1px solid var(--border); margin-top: 40px; }
+        .copyright { font-size: 12px; color: var(--text-muted); text-align: center; margin-top: 40px; }
 
         @media (max-width: 900px) {
           .explorer-layout { grid-template-columns: 1fr; }
