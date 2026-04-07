@@ -1,5 +1,13 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Environment Variables
+
+Create a local `.env.local` file with:
+
+```bash
+GEMINI_API_KEY=your_gemini_api_key_here
+```
+
 ## Getting Started
 
 First, run the development server:
@@ -17,6 +25,26 @@ bun dev
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+
+## Deploying To Vercel
+
+This app is a good fit for Vercel because it uses Next.js with an API route.
+
+1. Push this project to GitHub.
+2. Create a free account on Vercel.
+3. Import the GitHub repository into Vercel.
+4. Add `GEMINI_API_KEY` in the Vercel project environment variables.
+5. Deploy.
+
+After that, your normal workflow is:
+
+```bash
+git add .
+git commit -m "Describe your change"
+git push origin main
+```
+
+Each push to your connected branch can trigger a new deployment automatically.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
