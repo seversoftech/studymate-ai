@@ -352,7 +352,7 @@ export default function HomePage() {
     <div className="app-wrapper">
       <div className="bg-mesh" aria-hidden="true" />
 
-      <div className="container">
+      <div className="container" style={{ maxWidth: '1000px' }}>
         <Header theme={theme} toggleTheme={toggleTheme} />
 
         {/* Hero Section - Advanced */}
@@ -546,7 +546,6 @@ export default function HomePage() {
         <section className="features-highlight-v2">
           <div className="feat-header">
             <h3>Advanced Toolbox</h3>
-            <div className="feat-line" />
           </div>
           <div className="feat-grid">
             <div className="feat-item">
@@ -664,15 +663,14 @@ export default function HomePage() {
         .features-highlight-v2 { margin-top: 80px; padding: 60px 0; border-top: 1px solid var(--border); }
         .feat-header { display: flex; align-items: center; gap: 20px; margin-bottom: 40px; }
         .feat-header h3 { font-size: 12px; font-weight: 900; letter-spacing: 3px; text-transform: uppercase; color: var(--text-muted); }
-        .feat-line { flex: 1; height: 1px; background: var(--border); }
         .feat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 40px; }
         .feat-item { display: flex; flex-direction: column; gap: 12px; }
         .feat-icon { font-size: 28px; }
         .feat-item h4 { font-size: 16px; font-weight: 800; }
         .feat-item p { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
 
-        .footer-v2 { padding: 80px 0 40px; border-top: 1px solid var(--border); }
-        .copyright { font-size: 12px; color: var(--text-muted); text-align: center; margin-top: 40px; }
+        .footer-v2 { border-top: none; padding: 0; margin-top: 0; }
+        .copyright { margin-top: 0; }
 
         @media (max-width: 900px) {
           .main-content-row { grid-template-columns: 1fr; }

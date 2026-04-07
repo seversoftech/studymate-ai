@@ -401,8 +401,8 @@ export default function HistoryPage() {
         .preview-divider { height: 1px; background: var(--border); margin: 32px 0; position: relative; }
         .preview-divider::after { content: 'AI Result'; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); background: var(--bg-card); padding: 0 16px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); }
 
-        .footer-v2 { padding: 80px 0 40px; border-top: 1px solid var(--border); margin-top: 40px; }
-        .copyright { font-size: 12px; color: var(--text-muted); text-align: center; margin-top: 40px; }
+        .footer-v2 { border-top: none; padding: 0; margin-top: 0; }
+        .copyright { margin-top: 0; }
 
         @media (max-width: 900px) {
           .explorer-layout { grid-template-columns: 1fr; }

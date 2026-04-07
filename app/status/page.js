@@ -137,8 +137,8 @@ export default function StatusPage() {
         :global(.back-icon) { width: 18px; height: 18px; transition: transform 0.3s ease; }
         :global(.back-link-premium):hover :global(.back-icon) { transform: translateX(-4px); }
 
-        .footer-v2 { padding: 80px 0 40px; border-top: 1px solid var(--border); margin-top: 40px; }
-        .copyright { font-size: 12px; color: var(--text-muted); text-align: center; margin-top: 40px; }
+        .footer-v2 { border-top: none; padding: 0; margin-top: 0; }
+        .copyright { margin-top: 0; }
         
         @media (max-width: 768px) {
           .info-card.advanced { padding: 32px 24px; }
