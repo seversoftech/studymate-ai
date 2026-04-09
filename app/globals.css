@@ -88,6 +88,16 @@ body {
   overflow-x: hidden;
 }
 
+a,
+button,
+input,
+textarea,
+select,
+label,
+[role='button'] {
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* ─── Background Mesh ─── */
 .bg-mesh {
   position: fixed;

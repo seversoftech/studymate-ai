@@ -325,6 +325,18 @@ export default function HomePage() {
     setListening(true);
   }, [listening, content]);
 
+  const handleClearText = useCallback(() => {
+    recognitionRef.current?.stop();
+    setListening(false);
+    setContent('');
+    setError(null);
+    setResult(null);
+    setFlashcardStorageKey(null);
+
+    const textarea = document.getElementById('study-input');
+    textarea?.focus();
+  }, []);
+
   // ── Speech Synthesis ────────────────────────────────────────────────────────
   const handleSpeak = useCallback(() => {
     if (speaking) {
@@ -442,6 +454,7 @@ export default function HomePage() {
                       <div className="control-buttons">
                         <button className="icon-btn" onClick={handleLucky} title="Generate random topic">🎲</button>
                         <button className={`icon-btn mic ${listening ? 'active' : ''}`} onClick={handleMic} title="Voice input">🎤</button>
+                        <button className="icon-btn clear" onClick={handleClearText} title="Clear text" disabled={!content.trim()}>✕</button>
                       </div>
                     </div>
                   </div>
@@ -643,9 +656,12 @@ export default function HomePage() {
         .textarea-controls { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; border-top: 1px solid var(--border); }
         .char-count.modern { font-size: 12px; color: var(--text-muted); font-weight: 600; }
         .control-buttons { display: flex; gap: 8px; }
-        .icon-btn { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-card); display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; transition: all 0.2s; }
+        .icon-btn { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-primary); display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; transition: all 0.2s; }
         .icon-btn:hover { background: var(--bg-card-hover); border-color: var(--border-active); }
+        .icon-btn:disabled { opacity: 0.45; cursor: not-allowed; }
         .icon-btn.mic.active { color: #ef4444; border-color: #ef4444; background: rgba(239, 68, 68, 0.12); animation: pulseMic 1.5s infinite; }
+        .icon-btn.clear { font-size: 18px; color: var(--text-primary); background: color-mix(in srgb, var(--bg-card) 90%, transparent); }
+        .icon-btn.clear:hover:not(:disabled) { color: #f87171; border-color: rgba(248, 113, 113, 0.45); background: color-mix(in srgb, var(--bg-card-hover) 84%, rgba(248, 113, 113, 0.16)); }
 
         .upload-zone.modern { min-height: 380px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; border: 2px dashed var(--border); border-radius: 20px; transition: all 0.2s; cursor: pointer; }
         .upload-zone.modern:hover { background: rgba(99, 102, 241, 0.03); border-color: var(--accent-1); }

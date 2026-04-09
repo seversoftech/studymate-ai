@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>StudyMate AI Project Profile</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #0f172a;
+        --muted: #475569;
+        --line: #dbe3f0;
+        --panel: #f8fafc;
+        --brand: #4f46e5;
+        --brand-2: #0891b2;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Inter", "Segoe UI", Arial, sans-serif;
+        color: var(--ink);
+        background: #ffffff;
+        line-height: 1.6;
+      }
+
+      .page {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 44px 48px 56px;
+      }
+
+      .hero {
+        padding: 30px 32px;
+        border-radius: 28px;
+        background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(8, 145, 178, 0.08));
+        border: 1px solid rgba(79, 70, 229, 0.14);
+      }
+
+      .eyebrow {
+        display: inline-block;
+        margin-bottom: 12px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: rgba(79, 70, 229, 0.12);
+        color: var(--brand);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 0 0 10px;
+        font-size: 36px;
+        line-height: 1.08;
+      }
+
+      .lead {
+        margin: 0;
+        font-size: 16px;
+        color: var(--muted);
+      }
+
+      section {
+        margin-top: 28px;
+      }
+
+      h2 {
+        margin: 0 0 10px;
+        font-size: 20px;
+      }
+
+      p {
+        margin: 0 0 12px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+      }
+
+      .card {
+        padding: 18px 20px;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: var(--panel);
+      }
+
+      .card h3 {
+        margin: 0 0 8px;
+        font-size: 16px;
+      }
+
+      ul {
+        margin: 0;
+        padding-left: 18px;
+      }
+
+      li {
+        margin: 0 0 8px;
+      }
+
+      .feature-list li strong,
+      .stack-list li strong {
+        color: var(--ink);
+      }
+
+      .footer-note {
+        margin-top: 28px;
+        padding-top: 18px;
+        border-top: 1px solid var(--line);
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      @media print {
+        body {
+          background: #fff;
+        }
+
+        .page {
+          padding: 24px 28px 32px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <header class="hero">
+        <div class="eyebrow">Project Document</div>
+        <h1>StudyMate AI — Your Personal AI Study Companion</h1>
+        <p class="lead">
+          StudyMate AI is an intelligent web-based learning assistant that helps students turn
+          notes and documents into focused, exam-ready study materials. It reduces information
+          overload by using AI to summarize content, explain difficult concepts, generate likely
+          exam questions, build flashcards, highlight key points, and visualize ideas as mind maps.
+        </p>
+      </header>
+
+      <section>
+        <h2>Project Overview</h2>
+        <p>
+          StudyMate AI is designed to improve the way students prepare for tests and examinations.
+          Instead of reading long notes repeatedly, learners can upload a document or paste text and
+          instantly receive structured outputs that support faster understanding and more effective
+          revision. The platform combines artificial intelligence with a student-friendly interface
+          to make learning clearer, quicker, and more interactive.
+        </p>
+      </section>
+
+      <section class="grid">
+        <div class="card">
+          <h3>Problem the Project Solves</h3>
+          <p>
+            Many students struggle with bulky notes, complex textbook explanations, limited revision
+            time, and uncertainty about what is most important for examinations. This often leads to
+            poor concentration, weak retention, and inefficient study habits.
+          </p>
+        </div>
+        <div class="card">
+          <h3>Target Users</h3>
+          <p>
+            The platform is built for secondary school students, university students, and exam
+            candidates preparing for assessments such as WAEC, JAMB, and similar academic tests.
+          </p>
+        </div>
+      </section>
+
+      <section>
+        <h2>Project Objectives</h2>
+        <ul>
+          <li>Help students understand difficult topics in simple and familiar language.</li>
+          <li>Reduce long reading time by turning large notes into concise revision materials.</li>
+          <li>Improve exam readiness through question practice and focused review content.</li>
+          <li>Support active recall with flashcards and key revision points.</li>
+          <li>Make study sessions more engaging, structured, and productive.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Core Features</h2>
+        <ul class="feature-list">
+          <li><strong>Summarize:</strong> Produces a short, clear summary from long notes or documents.</li>
+          <li><strong>Explain:</strong> Breaks difficult concepts into simple teacher-style explanations.</li>
+          <li><strong>Generate Questions:</strong> Creates 20 multiple-choice questions and 10 theory questions for revision.</li>
+          <li><strong>Build Flashcards:</strong> Generates 12 flashcards to support recall and spaced repetition.</li>
+          <li><strong>Key Points:</strong> Extracts the main areas of concentration and the most important facts to remember.</li>
+          <li><strong>Concept Tree:</strong> Converts content into a visual mind map using Mermaid diagrams.</li>
+          <li><strong>History Tracking:</strong> Saves previous study results locally for future review.</li>
+          <li><strong>PDF Export:</strong> Allows users to export generated study output as a PDF document.</li>
+          <li><strong>Voice Support:</strong> Includes voice input and text-to-speech for more accessible study sessions.</li>
+          <li><strong>Document Upload:</strong> Accepts both typed notes and uploaded files such as PDFs and images.</li>
+        </ul>
+      </section>
+
+      <section class="grid">
+        <div class="card">
+          <h3>How the System Works</h3>
+          <ul>
+            <li>The student types notes or uploads a document.</li>
+            <li>The user selects a preferred AI study action.</li>
+            <li>The system sends the content to the AI engine for processing.</li>
+            <li>The platform returns a structured learning output for study and revision.</li>
+            <li>The result can be copied, listened to, saved in history, or exported as PDF.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Expected Benefits</h3>
+          <ul>
+            <li>Better concentration during revision.</li>
+            <li>Improved understanding of difficult topics.</li>
+            <li>Faster preparation for exams and tests.</li>
+            <li>More engaging and personalized study sessions.</li>
+            <li>Better knowledge retention through repeated active recall.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section>
+        <h2>Technology Stack</h2>
+        <ul class="stack-list">
+          <li><strong>Frontend:</strong> Next.js 16, React 19, CSS</li>
+          <li><strong>AI Integration:</strong> Google Generative AI (Gemini API)</li>
+          <li><strong>Visualization:</strong> Mermaid for concept trees and mind maps</li>
+          <li><strong>Document Export:</strong> jsPDF and html2canvas</li>
+          <li><strong>Storage:</strong> Browser local storage for history and progress tracking</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Security and Privacy Considerations</h2>
+        <p>
+          StudyMate AI includes dedicated privacy, security, and service status pages. The platform
+          is structured to process user inputs for study assistance while retaining history and
+          preferences primarily in the user’s browser local storage. This approach supports a more
+          privacy-conscious learning experience and gives users visibility into application trust and
+          service availability.
+        </p>
+      </section>
+
+      <section>
+        <h2>Possible Future Improvements</h2>
+        <ul>
+          <li>Personalized study plans and revision schedules.</li>
+          <li>Topic mastery scoring and adaptive recommendations.</li>
+          <li>Collaboration features for group study.</li>
+          <li>Offline access for previously generated materials.</li>
+          <li>Support for more file types and multilingual study assistance.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Conclusion</h2>
+        <p>
+          StudyMate AI is a practical educational technology solution that helps students study
+          smarter, understand faster, and prepare better for examinations. By converting raw learning
+          material into clear summaries, simple explanations, quizzes, flashcards, key points, and
+          visual concept maps, the platform provides a complete AI-powered revision experience in one
+          place.
+        </p>
+      </section>
+
+      <p class="footer-note">
+        Prepared for the StudyMate AI project based on the implemented application features and user
+        experience available in the current codebase.
+      </p>
+    </main>
+  </body>
+</html>
