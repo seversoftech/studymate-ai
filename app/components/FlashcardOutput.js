@@ -87,17 +87,40 @@ export default function FlashcardOutput({ text, storageKey = null }) {
       <div className="flashcards-grid">
         {cards.map((card) => {
           const rating = ratings[card.num];
+          const isFlipped = Boolean(flippedCards[card.num]);
           return (
-            <article key={card.num} className={`flashcard ${flippedCards[card.num] ? 'flipped' : ''}`}>
-              <button className="flashcard-face" onClick={() => handleFlip(card.num)}>
-                <div className="flashcard-topline">
-                  <span className="card-number">Card {card.num}</span>
-                  <span className="card-helper">{flippedCards[card.num] ? 'Tap to hide answer' : 'Tap to reveal answer'}</span>
-                </div>
+            <article key={card.num} className={`flashcard ${isFlipped ? 'flipped' : ''}`}>
+              <button
+                className="flashcard-face"
+                onClick={() => handleFlip(card.num)}
+                aria-pressed={isFlipped}
+              >
+                <div className="flashcard-scene">
+                  <div className="flashcard-rotator">
+                    <div className="flashcard-panel flashcard-panel-front">
+                      <div className="flashcard-topline">
+                        <span className="card-number">Card {card.num}</span>
+                        <span className="card-helper">Tap to reveal answer</span>
+                      </div>
 
-                <div className="flashcard-content">
-                  <div className="flashcard-label">{flippedCards[card.num] ? 'Back' : 'Front'}</div>
-                  <p>{flippedCards[card.num] ? card.back : card.front}</p>
+                      <div className="flashcard-content">
+                        <div className="flashcard-label">Front</div>
+                        <p>{card.front}</p>
+                      </div>
+                    </div>
+
+                    <div className="flashcard-panel flashcard-panel-back">
+                      <div className="flashcard-topline">
+                        <span className="card-number">Card {card.num}</span>
+                        <span className="card-helper">Tap to hide answer</span>
+                      </div>
+
+                      <div className="flashcard-content">
+                        <div className="flashcard-label">Back</div>
+                        <p>{card.back}</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </button>
 
@@ -131,8 +154,14 @@ export default function FlashcardOutput({ text, storageKey = null }) {
         .flashcards-progress { font-size: 12px; color: var(--text-muted); }
         .flashcards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
         .flashcard { display: flex; flex-direction: column; gap: 12px; padding: 18px; border-radius: 18px; border: 1px solid var(--border); background: linear-gradient(180deg, color-mix(in srgb, var(--bg-card) 94%, rgba(236,72,153,0.06)), var(--bg-card)); box-shadow: var(--shadow-sm); }
-        .flashcard-face { border: 1px solid rgba(236, 72, 153, 0.18); background: linear-gradient(135deg, rgba(236,72,153,0.08), rgba(251,146,60,0.06)); border-radius: 16px; min-height: 220px; padding: 18px; display: flex; flex-direction: column; gap: 18px; text-align: left; color: var(--text-primary); cursor: pointer; transition: transform 0.2s ease, border-color 0.2s ease; }
-        .flashcard-face:hover { transform: translateY(-2px); border-color: rgba(236, 72, 153, 0.32); }
+        .flashcard-face { border: 1px solid rgba(236, 72, 153, 0.18); background: transparent; border-radius: 16px; min-height: 220px; padding: 0; display: block; text-align: left; color: var(--text-primary); cursor: pointer; transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease; perspective: 1200px; overflow: hidden; }
+        .flashcard-face:hover { transform: translateY(-2px); border-color: rgba(236, 72, 153, 0.32); box-shadow: 0 16px 34px rgba(236, 72, 153, 0.12); }
+        .flashcard-scene { position: relative; min-height: 220px; }
+        .flashcard-rotator { position: relative; min-height: 220px; transform-style: preserve-3d; transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1); }
+        .flashcard.flipped .flashcard-rotator { transform: rotateY(180deg); }
+        .flashcard-panel { position: absolute; inset: 0; padding: 18px; display: flex; flex-direction: column; gap: 18px; border-radius: 16px; background: linear-gradient(135deg, rgba(236,72,153,0.08), rgba(251,146,60,0.06)); backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+        .flashcard-panel-front { transform: rotateY(0deg); }
+        .flashcard-panel-back { transform: rotateY(180deg); background: linear-gradient(135deg, rgba(251,146,60,0.12), rgba(236,72,153,0.12)); }
         .flashcard-topline { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
         .card-number { font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #f472b6; }
         .card-helper { font-size: 11px; color: var(--text-muted); }
@@ -151,7 +180,9 @@ export default function FlashcardOutput({ text, storageKey = null }) {
         @media (max-width: 640px) {
           .flashcards-toolbar { flex-direction: column; align-items: flex-start; }
           .rating-row { grid-template-columns: 1fr; }
-          .flashcard-face { min-height: 180px; }
+          .flashcard-face,
+          .flashcard-scene,
+          .flashcard-rotator { min-height: 180px; }
         }
       `}</style>
     </div>
