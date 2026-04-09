@@ -42,6 +42,14 @@ const ACTION_META = {
     badgeLabel: 'Flashcards',
     title: 'Spaced Repetition Flashcards',
   },
+  keypoints: {
+    icon: '📌',
+    label: 'Key Points',
+    desc: 'Area of concentration',
+    className: 'action-btn-keypoints',
+    badgeLabel: 'Key Points',
+    title: 'Area of Concentration',
+  },
   mindmap: {
     icon: '🕸️',
     label: 'Concept Tree',
@@ -190,6 +198,7 @@ export default function HomePage() {
         stats.questions += 30; // 20 MCQs + 10 Theory questions
       }
       else if (type === 'flashcards') stats.flashcards++;
+      else if (type === 'keypoints') stats.keypoints++;
       localStorage.setItem('study_stats', JSON.stringify(stats));
     } catch (e) {
       console.error('Failed to update stats:', e);
@@ -663,6 +672,7 @@ export default function HomePage() {
         .output-badge.explain { color: #10b981; background: rgba(16, 185, 129, 0.1); }
         .output-badge.quiz { color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
         .output-badge.flashcards { color: #ec4899; background: rgba(236, 72, 153, 0.12); }
+        .output-badge.keypoints { color: #2563eb; background: rgba(37, 99, 235, 0.12); }
         .output-badge.mindmap { color: #06b6d4; background: rgba(6, 182, 212, 0.1); }
         
         .output-title { font-size: 18px; font-weight: 800; font-family: 'Outfit', sans-serif; }

@@ -4,6 +4,7 @@ export const DEFAULT_STATS = {
   quizzes: 0,
   questions: 0,
   flashcards: 0,
+  keypoints: 0,
 };
 
 export function getStoredStats() {

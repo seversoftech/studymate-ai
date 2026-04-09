@@ -79,6 +79,7 @@ Back: [Answer, definition, or explanation]
 [Repeat for CARD 1 to CARD 12 with a blank line between cards]
 
 Content:\n\n`,
+    keypoints: `${prefix}extract the key points and main areas of concentration from this content for a student preparing to revise. Present the answer as short, clear bullet points. Focus on the most important facts, concepts, formulas, definitions, dates, or ideas to remember. Keep it concise and practical for revision:\n\n`,
   };
 
   return map[type];
@@ -158,9 +159,9 @@ export async function POST(request) {
       }
     }
 
-    if (!type || !["summary", "explain", "quiz", "mindmap", "flashcards"].includes(type)) {
+    if (!type || !["summary", "explain", "quiz", "mindmap", "flashcards", "keypoints"].includes(type)) {
       return Response.json(
-        { error: "Invalid type. Must be: summary, explain, quiz, mindmap, or flashcards." },
+        { error: "Invalid type. Must be: summary, explain, quiz, mindmap, flashcards, or keypoints." },
         { status: 400 }
       );
     }
