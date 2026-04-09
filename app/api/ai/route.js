@@ -1,6 +1,46 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const RETRYABLE_STATUS_CODES = new Set([429, 500, 503]);
+const MAX_RETRIES = 2;
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const extractStatusCode = (error) => {
+  if (typeof error?.status === "number") return error.status;
+  if (typeof error?.code === "number") return error.code;
+  if (typeof error?.response?.status === "number") return error.response.status;
+  return null;
+};
+
+const isRetryableGeminiError = (error) => {
+  const status = extractStatusCode(error);
+  return status !== null && RETRYABLE_STATUS_CODES.has(status);
+};
+
+const generateWithRetry = async (model, payload) => {
+  let lastError;
+
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt += 1) {
+    try {
+      return await model.generateContent(payload);
+    } catch (error) {
+      lastError = error;
+
+      if (!isRetryableGeminiError(error) || attempt === MAX_RETRIES) {
+        throw error;
+      }
+
+      const delayMs = 600 * (attempt + 1);
+      console.warn(
+        `Gemini temporary failure (${extractStatusCode(error)}). Retrying in ${delayMs}ms.`
+      );
+      await sleep(delayMs);
+    }
+  }
+
+  throw lastError;
+};
 
 const buildPrompt = (type, hasFile) => {
   const prefix = hasFile
@@ -30,6 +70,15 @@ Answer: [Explanation]
 
 Content:\n\n`,
     mindmap: `${prefix}generate a visual relationship diagram or mind map using Mermaid.js syntax (use graph TD). Show connections between key topics and subtopics. Return ONLY the code, no markdown blocks:\n\n`,
+    flashcards: `${prefix}generate exactly 12 study flashcards based on this content. Each flashcard must be concise, useful for revision, and formatted EXACTLY like this:
+
+CARD 1
+Front: [Question, key term, or prompt]
+Back: [Answer, definition, or explanation]
+
+[Repeat for CARD 1 to CARD 12 with a blank line between cards]
+
+Content:\n\n`,
   };
 
   return map[type];
@@ -109,9 +158,9 @@ export async function POST(request) {
       }
     }
 
-    if (!type || !["summary", "explain", "quiz", "mindmap"].includes(type)) {
+    if (!type || !["summary", "explain", "quiz", "mindmap", "flashcards"].includes(type)) {
       return Response.json(
-        { error: "Invalid type. Must be: summary, explain, or quiz." },
+        { error: "Invalid type. Must be: summary, explain, quiz, mindmap, or flashcards." },
         { status: 400 }
       );
     }
@@ -122,18 +171,31 @@ export async function POST(request) {
     let aiResult;
 
     if (fileBase64) {
-      aiResult = await model.generateContent([
+      aiResult = await generateWithRetry(model, [
         { inlineData: { data: fileBase64, mimeType: fileMimeType } },
         promptText,
       ]);
     } else {
-      aiResult = await model.generateContent(`${promptText}${content.trim()}`);
+      aiResult = await generateWithRetry(model, `${promptText}${content.trim()}`);
     }
 
     const text = aiResult.response.text();
     return Response.json({ result: text });
   } catch (error) {
     console.error("Gemini API Error:", error);
+
+    const status = extractStatusCode(error);
+    if (status === 429 || status === 503) {
+      return Response.json(
+        {
+          error:
+            "StudyMate AI is temporarily overloaded right now. Please wait a few seconds and try again.",
+          retryable: true,
+        },
+        { status: 503, headers: { "Retry-After": "5" } }
+      );
+    }
+
     return Response.json(
       { error: "Failed to generate a response. Please try again." },
       { status: 500 }

@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from 'react';
 import Header from '../components/Header';
 import QuizOutput from '../components/QuizOutput';
 import MermaidChart from '../components/MermaidChart';
+import FlashcardOutput from '../components/FlashcardOutput';
+import { DEFAULT_STATS, getStoredStats } from '../lib/stats';
 import Link from 'next/link';
 
 export default function HistoryPage() {
@@ -11,7 +13,7 @@ export default function HistoryPage() {
   const [theme, setTheme] = useState('dark');
   const [speaking, setSpeaking] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
-  const [stats, setStats] = useState({ summaries: 0, explains: 0, quizzes: 0, questions: 0 });
+  const [stats, setStats] = useState(DEFAULT_STATS);
   const [searchQuery, setSearchQuery] = useState('');
 
   // ── Theme management ────────────────────────────────────────────────────────
@@ -24,8 +26,7 @@ export default function HistoryPage() {
     // Load history and stats
     const savedHistory = JSON.parse(localStorage.getItem('study_history') || '[]');
     setHistory(savedHistory);
-    const savedStats = JSON.parse(localStorage.getItem('study_stats') || '{"summaries":0,"explains":0,"quizzes":0,"questions":0}');
-    setStats(savedStats);
+    setStats(getStoredStats());
   }, []);
 
   const toggleTheme = useCallback(() => {
@@ -40,7 +41,7 @@ export default function HistoryPage() {
       localStorage.removeItem('study_history');
       localStorage.removeItem('study_stats');
       setHistory([]);
-      setStats({ summaries: 0, explains: 0, quizzes: 0, questions: 0 });
+      setStats(DEFAULT_STATS);
     }
   };
 
@@ -153,6 +154,13 @@ export default function HistoryPage() {
                 </div>
                 <div className="stat-value">{stats.quizzes}</div>
               </div>
+              <div className="stat-card">
+                <div className="stat-icon-group">
+                  <div className="stat-icon flashcards">🃏</div>
+                  <span className="stat-label">Flashcards</span>
+                </div>
+                <div className="stat-value">{stats.flashcards}</div>
+              </div>
               <div className="stat-card highlight">
                 <div className="stat-icon-group">
                   <div className="stat-icon mastery">🧠</div>
@@ -247,19 +255,19 @@ export default function HistoryPage() {
                 <div className="preview-placeholder">
                   <div className="placeholder-icon">📖</div>
                   <h3>Select a record to review</h3>
-                  <p>Pick any summary or quiz from your history to see the full details here.</p>
+                  <p>Pick any saved study result to see the full details here.</p>
                 </div>
               ) : (
                 <div className="preview-card" id="history-preview-card">
                   <div className="preview-header">
                     <div className="preview-title-group">
                       <span className={`output-type-badge ${selectedItem.type}`}>
-                        {selectedItem.type === 'summary' ? '📝' : selectedItem.type === 'explain' ? '🎓' : selectedItem.type === 'quiz' ? '❓' : '🕸️'} {selectedItem.title}
+                        {selectedItem.type === 'summary' ? '📝' : selectedItem.type === 'explain' ? '🎓' : selectedItem.type === 'quiz' ? '❓' : selectedItem.type === 'flashcards' ? '🃏' : '🕸️'} {selectedItem.title}
                       </span>
                       <h2>Source Material</h2>
                     </div>
                     <div className="preview-actions">
-                      {selectedItem.type !== 'quiz' && selectedItem.type !== 'mindmap' && (
+                      {selectedItem.type !== 'quiz' && selectedItem.type !== 'mindmap' && selectedItem.type !== 'flashcards' && (
                         <button
                           className={`preview-btn speech ${speaking ? 'active' : ''}`}
                           onClick={() => handleSpeak(selectedItem.result)}
@@ -289,6 +297,11 @@ export default function HistoryPage() {
                     <div className="preview-result-container">
                       {selectedItem.type === 'quiz' 
                         ? <QuizOutput text={selectedItem.result} />
+                        : selectedItem.type === 'flashcards'
+                        ? <FlashcardOutput
+                            text={selectedItem.result}
+                            storageKey={`flashcard_progress_${selectedItem.id}`}
+                          />
                         : selectedItem.type === 'mindmap'
                         ? <MermaidChart chart={selectedItem.result} />
                         : <div className="output-text" style={{ padding: 0 }}>{selectedItem.result}</div>
@@ -332,6 +345,7 @@ export default function HistoryPage() {
         .stat-icon.summary { background: rgba(99, 102, 241, 0.1); }
         .stat-icon.explain { background: rgba(16, 185, 129, 0.1); }
         .stat-icon.quiz { background: rgba(245, 158, 11, 0.1); }
+        .stat-icon.flashcards { background: rgba(236, 72, 153, 0.12); }
         .stat-icon.mastery { background: var(--gradient-hero); color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
         .stat-label { font-size: 13px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
         .stat-value { font-size: 32px; font-weight: 800; font-family: 'Outfit', sans-serif; }
@@ -368,6 +382,7 @@ export default function HistoryPage() {
         .type-dot.summary { background: var(--accent-1); }
         .type-dot.explain { background: #10b981; }
         .type-dot.quiz { background: #f59e0b; }
+        .type-dot.flashcards { background: #ec4899; }
         .type-dot.mindmap { background: #06b6d4; }
         
         .item-preview-text { font-size: 15px; font-weight: 600; line-height: 1.4; color: var(--text-primary); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 12px; }

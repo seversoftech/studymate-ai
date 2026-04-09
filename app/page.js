@@ -5,7 +5,9 @@ import QuizOutput from './components/QuizOutput';
 import TypingAnimation from './components/TypingAnimation';
 import Header from './components/Header';
 import MermaidChart from './components/MermaidChart';
+import FlashcardOutput from './components/FlashcardOutput';
 import { LUCKY_TOPICS } from './data/luckyTopics';
+import { getStoredStats } from './lib/stats';
 
 const ACTION_META = {
   summary: {
@@ -31,6 +33,14 @@ const ACTION_META = {
     className: 'action-btn-quiz',
     badgeLabel: 'Quiz',
     title: 'Exam Readiness Test',
+  },
+  flashcards: {
+    icon: '🃏',
+    label: 'Build Flashcards',
+    desc: '12 cards with review difficulty',
+    className: 'action-btn-flashcards',
+    badgeLabel: 'Flashcards',
+    title: 'Spaced Repetition Flashcards',
   },
   mindmap: {
     icon: '🕸️',
@@ -74,6 +84,7 @@ export default function HomePage() {
   const recognitionRef = useRef(null);
   const outputRef = useRef(null);
   const fileInputRef = useRef(null);
+  const [flashcardStorageKey, setFlashcardStorageKey] = useState(null);
 
   // ── Theme management ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -99,6 +110,7 @@ export default function HomePage() {
     setContent(randomTopic);
     setError(null);
     setResult(null);
+    setFlashcardStorageKey(null);
 
     const textarea = document.getElementById('study-input');
     if (textarea) {
@@ -122,6 +134,7 @@ export default function HomePage() {
     setUploadedFile(file);
     setError(null);
     setResult(null);
+    setFlashcardStorageKey(null);
   }, []);
 
   const handleDrop = useCallback((e) => {
@@ -142,6 +155,7 @@ export default function HomePage() {
     setUploadedFile(null);
     setResult(null);
     setError(null);
+    setFlashcardStorageKey(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   }, []);
 
@@ -159,20 +173,23 @@ export default function HomePage() {
         title: ACTION_META[type].title
       };
       localStorage.setItem('study_history', JSON.stringify([newItem, ...history].slice(0, 50)));
+      return newItem.id;
     } catch (e) {
       console.error('Failed to save history:', e);
+      return null;
     }
   }, []);
 
   const updateStats = useCallback((type) => {
     try {
-      const stats = JSON.parse(localStorage.getItem('study_stats') || '{"summaries":0,"explains":0,"quizzes":0,"questions":0}');
+      const stats = getStoredStats();
       if (type === 'summary') stats.summaries++;
       else if (type === 'explain') stats.explains++;
       else if (type === 'quiz') {
         stats.quizzes++;
         stats.questions += 30; // 20 MCQs + 10 Theory questions
       }
+      else if (type === 'flashcards') stats.flashcards++;
       localStorage.setItem('study_stats', JSON.stringify(stats));
     } catch (e) {
       console.error('Failed to update stats:', e);
@@ -201,6 +218,7 @@ export default function HomePage() {
     setError(null);
     setResult(null);
     setActiveType(type);
+    setFlashcardStorageKey(null);
     window.speechSynthesis.cancel();
     setSpeaking(false);
 
@@ -220,10 +238,18 @@ export default function HomePage() {
       }
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Something went wrong. Please try again.');
+      if (!res.ok) {
+        const fallbackMessage = res.status === 503
+          ? 'StudyMate AI is temporarily overloaded right now. Please wait a few seconds and try again.'
+          : 'Something went wrong. Please try again.';
+        throw new Error(data.error || fallbackMessage);
+      }
 
       setResult(data.result);
-      saveToHistory(type, inputMode === 'file' ? `File: ${uploadedFile.name}` : content, data.result);
+      const savedId = saveToHistory(type, inputMode === 'file' ? `File: ${uploadedFile.name}` : content, data.result);
+      if (type === 'flashcards' && savedId) {
+        setFlashcardStorageKey(`flashcard_progress_${savedId}`);
+      }
       updateStats(type);
 
       setTimeout(() => {
@@ -363,12 +389,12 @@ export default function HomePage() {
             AI-POWERED COGNITIVE ASSISTANT
           </div>
           <h1 id="hero-title" className="hero-title modern">
-            Study Smarter with <TypingAnimation />
-            <br />
+            <span style={{ display: 'block' }}>Study Smarter with</span>
+            <span style={{ display: 'block' }}><TypingAnimation /></span>
           </h1>
           <p className="hero-subtitle modern">
             The ultimate productivity suite for students. Transform messy notes into
-            brilliant summaries, visual mind maps, and interactive quizzes instantly.
+            brilliant summaries, visual mind maps, interactive quizzes, and revision flashcards instantly.
           </p>
         </section>
 
@@ -498,9 +524,11 @@ export default function HomePage() {
                 <div className="output-body advanced">
                   {activeType === 'quiz'
                     ? <QuizOutput text={result} />
-                    : activeType === 'mindmap'
-                      ? <MermaidChart chart={result} />
-                      : <div className="output-text normal">{result}</div>
+                    : activeType === 'flashcards'
+                      ? <FlashcardOutput text={result} storageKey={flashcardStorageKey} />
+                      : activeType === 'mindmap'
+                        ? <MermaidChart chart={result} />
+                        : <div className="output-text normal">{result}</div>
                   }
                 </div>
               </div>
@@ -634,6 +662,7 @@ export default function HomePage() {
         .output-badge { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-1); background: rgba(99, 102, 241, 0.1); padding: 4px 12px; border-radius: 20px; width: fit-content; }
         .output-badge.explain { color: #10b981; background: rgba(16, 185, 129, 0.1); }
         .output-badge.quiz { color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
+        .output-badge.flashcards { color: #ec4899; background: rgba(236, 72, 153, 0.12); }
         .output-badge.mindmap { color: #06b6d4; background: rgba(6, 182, 212, 0.1); }
         
         .output-title { font-size: 18px; font-weight: 800; font-family: 'Outfit', sans-serif; }
