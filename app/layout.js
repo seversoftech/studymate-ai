@@ -1,4 +1,5 @@
 import './globals.css';
+import AppBootLoader from './components/AppBootLoader';
 
 export const metadata = {
   title: 'StudyMate AI – Your AI-Powered Study Assistant',
@@ -17,7 +18,10 @@ export default function RootLayout({ children }) {
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
-      <body suppressHydrationWarning>{children}</body>
+      <body suppressHydrationWarning>
+        <AppBootLoader />
+        {children}
+      </body>
     </html>
   );
 }
