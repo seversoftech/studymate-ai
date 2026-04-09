@@ -617,7 +617,7 @@ export default function HomePage() {
         .pulse-dot { width: 6px; height: 6px; background: var(--accent-1); border-radius: 50%; box-shadow: 0 0 10px var(--accent-1); animation: pulse 2s infinite; }
         @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.5; } 100% { transform: scale(1); opacity: 1; } }
         
-        .hero-title.modern { font-size: clamp(36px, 8vw, 72px); letter-spacing: -2px; line-height: 1; margin-bottom: 24px; }
+        .hero-title.modern { font-size: clamp(42px, 9vw, 80px); letter-spacing: -2px; line-height: 1; margin-bottom: 24px; }
         .hero-subtitle.modern { font-size: 20px; max-width: 600px; margin: 0 auto; color: var(--text-secondary); opacity: 0.8; }
 
         .main-content-row { display: grid; grid-template-columns: 1fr 1.2fr; gap: 40px; margin-top: 40px; align-items: flex-start; }
@@ -703,7 +703,7 @@ export default function HomePage() {
 
         @media (max-width: 900px) {
           .main-content-row { grid-template-columns: 1fr; }
-          .hero-title.modern { font-size: 42px; }
+          .hero-title.modern { font-size: 48px; }
           .hero-advanced { padding: 60px 0 40px; }
           .output-card.advanced { position: static; }
         }

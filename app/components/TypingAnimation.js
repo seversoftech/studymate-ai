@@ -46,10 +46,10 @@ export default function TypingAnimation() {
 
   return (
     <span className="typing-container">
-      <span className="typed-text" style={{ color: '#14213d' }}>
+      <span className="typed-text">
         {phrases[index].substring(0, subIndex)}
       </span>
-      <span className={`cursor ${blink ? 'visible' : 'hidden'}`} style={{ color: '#14213d' }}>|</span>
+      <span className={`cursor ${blink ? 'visible' : 'hidden'}`}>|</span>
     </span>
   );
 }
