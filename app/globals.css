@@ -18,6 +18,7 @@
   --text-primary: #f1f5ff;
   --text-secondary: #8b93b0;
   --text-muted: #4e5673;
+  --typing-text-color: #f8fafc;
 
   --accent-1: #6366f1;
   --accent-2: #8b5cf6;
@@ -59,6 +60,7 @@
   --text-primary: #0f172a;
   --text-secondary: #475569;
   --text-muted: #64748b;
+  --typing-text-color: #0a0d14;
 
   --accent-1: #4f46e5;
   --accent-2: #7c3aed;
@@ -1311,7 +1313,7 @@ body {
   font-weight: 800;
 }
 .typed-text {
-  color: #0b1f4d;
+  color: var(--typing-text-color);
   font-family: inherit;
   font-weight: inherit;
   background: none;
@@ -1322,13 +1324,79 @@ body {
 .cursor {
   display: inline-block;
   width: auto;
-  color: #0b1f4d;
+  color: var(--typing-text-color);
   background-color: transparent;
   margin-left: 4px;
   animation: none;
 }
 .cursor.visible { opacity: 1; }
 .cursor.hidden { opacity: 0; }
+
+/* ─── App Loading Screen ─── */
+.app-loading-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at top, rgba(99, 102, 241, 0.12) 0%, transparent 42%),
+    linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+}
+
+.app-loading-card {
+  width: min(100%, 420px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding: 40px 32px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(12px);
+}
+
+.app-loading-logo {
+  width: 72px;
+  height: 72px;
+  display: grid;
+  place-items: center;
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.24), rgba(6, 182, 212, 0.18));
+  border: 1px solid rgba(99, 102, 241, 0.22);
+  font-size: 34px;
+}
+
+.app-loading-spinner {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 4px solid rgba(255, 255, 255, 0.12);
+  border-top-color: var(--accent-1);
+  animation: appLoaderSpin 0.9s linear infinite;
+}
+
+.app-loading-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.app-loading-text {
+  max-width: 280px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+@keyframes appLoaderSpin {
+  to { transform: rotate(360deg); }
+}
 
 /* ─── Modern Features Grid ─── */
 .features-grid {
