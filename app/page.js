@@ -208,6 +208,16 @@ export default function HomePage() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   }, []);
 
+  const handleUploadZoneClick = useCallback((event) => {
+    if (event.target.closest('.remove-pill')) {
+      return;
+    }
+
+    if (!uploadedFile) {
+      fileInputRef.current?.click();
+    }
+  }, [uploadedFile]);
+
   // ── History Helper ────────────────────────────────────────────────────────
   const saveToHistory = useCallback((type, input, result) => {
     try {
@@ -543,7 +553,7 @@ export default function HomePage() {
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
-                    onClick={() => !uploadedFile && fileInputRef.current?.click()}
+                    onClick={handleUploadZoneClick}
                   >
                     <input
                       ref={fileInputRef}
@@ -554,13 +564,24 @@ export default function HomePage() {
                       accept=".pdf,image/*"
                     />
                     {uploadedFile ? (
-                      <div className="file-pill">
+                      <div className="file-pill" onClick={(e) => e.stopPropagation()}>
                         <FileTypeIcon mimeType={uploadedFile.type} />
                         <div className="file-info">
                           <span className="file-name">{uploadedFile.name}</span>
                           <span className="file-size">{formatBytes(uploadedFile.size)}</span>
                         </div>
-                        <button className="remove-pill" onClick={(e) => { e.stopPropagation(); handleRemoveFile(); }}>✕</button>
+                        <button
+                          type="button"
+                          className="remove-pill"
+                          aria-label="Remove uploaded file"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleRemoveFile();
+                          }}
+                        >
+                          ✕
+                        </button>
                       </div>
                     ) : (
                       <div className="upload-empty-state">
