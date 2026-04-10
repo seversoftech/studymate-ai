@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -79,7 +79,7 @@ html {
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
   background-color: var(--bg-primary);
   color: var(--text-primary);
   min-height: 100vh;
@@ -96,6 +96,7 @@ select,
 label,
 [role='button'] {
   -webkit-tap-highlight-color: transparent;
+  font-family: inherit;
 }
 
 /* ─── Background Mesh ─── */
@@ -364,7 +365,7 @@ label,
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   color: var(--text-primary);
-  font-family: 'Inter', sans-serif;
+  font-family: inherit;
   font-size: 15px;
   line-height: 1.7;
   padding: 18px;
@@ -495,7 +496,7 @@ label,
   cursor: pointer;
   transition: all var(--transition);
   overflow: hidden;
-  font-family: 'Inter', sans-serif;
+  font-family: inherit;
 }
 
 .action-btn::before {
@@ -702,7 +703,7 @@ label,
   padding: 6px 12px;
   cursor: pointer;
   transition: all var(--transition);
-  font-family: 'Inter', sans-serif;
+  font-family: inherit;
 }
 
 .copy-btn:hover {
@@ -1055,7 +1056,7 @@ label,
   padding: 9px 16px;
   border: none;
   border-radius: 10px;
-  font-family: 'Inter', sans-serif;
+  font-family: inherit;
   font-size: 13px;
   font-weight: 500;
   color: var(--text-muted);
@@ -1316,11 +1317,25 @@ label,
 
 /* ─── Typing Animation ─── */
 .typing-container {
-  display: inline-flex;
+  display: inline-grid;
   align-items: center;
-  min-width: 200px;
   font-family: 'Outfit', sans-serif;
   font-weight: 800;
+  position: relative;
+}
+.typing-sizer,
+.typing-live {
+  grid-area: 1 / 1;
+}
+.typing-sizer {
+  visibility: hidden;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.typing-live {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
 }
 .typed-text {
   color: var(--typing-text-color);

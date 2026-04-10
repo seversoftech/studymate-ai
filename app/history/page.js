@@ -331,7 +331,15 @@ export default function HistoryPage() {
       </div>
 
       <style jsx>{`
-        .history-main { padding: 40px 0 80px; }
+        .history-main { padding: 40px 0 80px; font-family: 'Outfit', sans-serif; }
+        .history-main button,
+        .history-main input,
+        .history-main textarea,
+        .history-main select { font-family: inherit; }
+        .history-main :global(.output-text),
+        .history-main :global(.quiz-container),
+        .history-main :global(.flashcards-shell),
+        .history-main :global(.mermaid) { font-family: inherit; }
         .dashboard-hero { margin-bottom: 60px; }
         .dashboard-title-area { margin-bottom: 32px; }
         
@@ -373,9 +381,9 @@ export default function HistoryPage() {
         .history-scroll::-webkit-scrollbar { width: 4px; }
         .history-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
 
-        .history-item-new { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; cursor: pointer; transition: all 0.2s; position: relative; border-left: 4px solid transparent; }
+        .history-item-new { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; cursor: pointer; transition: all 0.2s; position: relative; border-left: 4px solid transparent; }
         .history-item-new:hover { background: var(--bg-card-hover); transform: translateX(4px); }
-        .history-item-new.active { background: var(--bg-card-hover); border-color: var(--border-active); border-left-color: var(--accent-1); box-shadow: var(--shadow-sm); }
+        .history-item-new.active { background: var(--bg-card-hover); border-color: var(--border-active); box-shadow: var(--shadow-sm); }
         
         .item-type-tag { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
         .type-dot { width: 8px; height: 8px; border-radius: 50%; }

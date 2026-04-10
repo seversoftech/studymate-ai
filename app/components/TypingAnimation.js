@@ -10,6 +10,10 @@ const phrases = [
   'Deep Insights',
 ];
 
+const longestPhrase = phrases.reduce((longest, phrase) => (
+  phrase.length > longest.length ? phrase : longest
+), phrases[0]);
+
 export default function TypingAnimation() {
   const [index, setIndex] = useState(0);
   const [subIndex, setSubIndex] = useState(0);
@@ -46,10 +50,15 @@ export default function TypingAnimation() {
 
   return (
     <span className="typing-container">
-      <span className="typed-text">
-        {phrases[index].substring(0, subIndex)}
+      <span className="typing-sizer" aria-hidden="true">
+        {longestPhrase}
       </span>
-      <span className={`cursor ${blink ? 'visible' : 'hidden'}`}>|</span>
+      <span className="typing-live">
+        <span className="typed-text">
+          {phrases[index].substring(0, subIndex)}
+        </span>
+        <span className={`cursor ${blink ? 'visible' : 'hidden'}`}>|</span>
+      </span>
     </span>
   );
 }
