@@ -1,6 +1,15 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const PRIMARY_ENGINE = "spark";
+const BACKUP_ENGINE = "focus";
+const VALID_TYPES = new Set([
+  "summary",
+  "explain",
+  "quiz",
+  "mindmap",
+  "flashcards",
+  "keypoints",
+]);
 const RETRYABLE_STATUS_CODES = new Set([429, 500, 503]);
 const MAX_RETRIES = 2;
 
@@ -13,27 +22,33 @@ const extractStatusCode = (error) => {
   return null;
 };
 
-const isRetryableGeminiError = (error) => {
+const createHttpError = (message, status) => {
+  const error = new Error(message);
+  error.status = status;
+  return error;
+};
+
+const isRetryableError = (error) => {
   const status = extractStatusCode(error);
   return status !== null && RETRYABLE_STATUS_CODES.has(status);
 };
 
-const generateWithRetry = async (model, payload) => {
+const withRetries = async (fn, label) => {
   let lastError;
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt += 1) {
     try {
-      return await model.generateContent(payload);
+      return await fn();
     } catch (error) {
       lastError = error;
 
-      if (!isRetryableGeminiError(error) || attempt === MAX_RETRIES) {
+      if (!isRetryableError(error) || attempt === MAX_RETRIES) {
         throw error;
       }
 
       const delayMs = 600 * (attempt + 1);
       console.warn(
-        `Gemini temporary failure (${extractStatusCode(error)}). Retrying in ${delayMs}ms.`
+        `${label} temporary failure (${extractStatusCode(error)}). Retrying in ${delayMs}ms.`
       );
       await sleep(delayMs);
     }
@@ -41,6 +56,15 @@ const generateWithRetry = async (model, payload) => {
 
   throw lastError;
 };
+
+const isConfigured = (value, placeholder) =>
+  Boolean(value && value !== placeholder);
+
+const hasGeminiKey = () =>
+  isConfigured(process.env.GEMINI_API_KEY, "your_gemini_api_key_here");
+
+const hasGroqKey = () =>
+  isConfigured(process.env.GROQ_API_KEY, "your_groq_api_key_here");
 
 const buildPrompt = (type, hasFile) => {
   const prefix = hasFile
@@ -85,29 +109,121 @@ Content:\n\n`,
   return map[type];
 };
 
-export async function POST(request) {
-  try {
-    if (
-      !process.env.GEMINI_API_KEY ||
-      process.env.GEMINI_API_KEY === "your_gemini_api_key_here"
-    ) {
-      return Response.json(
-        {
-          error:
-            "GEMINI_API_KEY is not configured. Please add it to your .env.local file.",
-        },
-        { status: 500 }
-      );
+const generateWithGemini = async ({ type, content, fileBase64, fileMimeType }) => {
+  if (!hasGeminiKey()) {
+    throw createHttpError(
+      "Primary AI engine is not configured. Add GEMINI_API_KEY to enable it.",
+      500
+    );
+  }
+
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+  const promptText = buildPrompt(type, Boolean(fileBase64));
+
+  const response = await withRetries(async () => {
+    if (fileBase64) {
+      return model.generateContent([
+        { inlineData: { data: fileBase64, mimeType: fileMimeType } },
+        promptText,
+      ]);
     }
 
+    return model.generateContent(`${promptText}${content.trim()}`);
+  }, "Primary AI engine");
+
+  return response.response.text();
+};
+
+const generateWithGroq = async ({ type, content, fileBase64, fileMimeType }) => {
+  if (!hasGroqKey()) {
+    throw createHttpError(
+      "Backup AI engine is not configured. Add GROQ_API_KEY to enable it.",
+      500
+    );
+  }
+
+  const isImageInput = Boolean(fileBase64 && fileMimeType?.startsWith("image/"));
+  const model = isImageInput
+    ? "meta-llama/llama-4-scout-17b-16e-instruct"
+    : "llama-3.1-8b-instant";
+
+  const response = await withRetries(async () => {
+    const apiResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model,
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are StudyMate AI, a precise, student-friendly learning assistant. Follow the requested output format exactly.",
+          },
+          {
+            role: "user",
+            content: isImageInput
+              ? [
+                  { type: "text", text: buildPrompt(type, true) },
+                  {
+                    type: "image_url",
+                    image_url: {
+                      url: `data:${fileMimeType};base64,${fileBase64}`,
+                    },
+                  },
+                ]
+              : `${buildPrompt(type, false)}${content.trim()}`,
+          },
+        ],
+      }),
+    });
+
+    if (!apiResponse.ok) {
+      let message = "Backup AI engine request failed.";
+
+      try {
+        const errorPayload = await apiResponse.json();
+        message =
+          errorPayload?.error?.message ||
+          errorPayload?.message ||
+          message;
+      } catch {
+        // Ignore JSON parsing failures and use the default message.
+      }
+
+      throw createHttpError(message, apiResponse.status);
+    }
+
+    const payload = await apiResponse.json();
+    const text = payload?.choices?.[0]?.message?.content?.trim();
+
+    if (!text) {
+      throw createHttpError("Backup AI engine returned an empty response.", 502);
+    }
+
+    return text;
+  }, "Backup AI engine");
+
+  return response;
+};
+
+export async function POST(request) {
+  try {
     const contentType = request.headers.get("content-type") || "";
 
-    let type, content, fileBase64, fileMimeType;
+    let type;
+    let content;
+    let fileBase64;
+    let fileMimeType;
+    let modelPreference = PRIMARY_ENGINE;
 
-    // ── File upload path ──────────────────────────────────────────────────────
     if (contentType.includes("multipart/form-data")) {
       const formData = await request.formData();
       type = formData.get("type");
+      modelPreference = formData.get("modelPreference") || PRIMARY_ENGINE;
       const file = formData.get("file");
 
       if (!file || typeof file === "string") {
@@ -117,7 +233,6 @@ export async function POST(request) {
         );
       }
 
-      // 10 MB hard limit
       if (file.size > 10 * 1024 * 1024) {
         return Response.json(
           { error: "File too large. Maximum size is 10 MB." },
@@ -132,6 +247,7 @@ export async function POST(request) {
         "image/gif",
         "application/pdf",
       ];
+
       if (!allowed.includes(file.type)) {
         return Response.json(
           {
@@ -146,10 +262,10 @@ export async function POST(request) {
       fileBase64 = Buffer.from(arrayBuffer).toString("base64");
       fileMimeType = file.type;
     } else {
-      // ── Plain-text path ─────────────────────────────────────────────────────
       const body = await request.json();
       type = body.type;
       content = body.content;
+      modelPreference = body.modelPreference || PRIMARY_ENGINE;
 
       if (!content || content.trim().length < 20) {
         return Response.json(
@@ -159,33 +275,57 @@ export async function POST(request) {
       }
     }
 
-    if (!type || !["summary", "explain", "quiz", "mindmap", "flashcards", "keypoints"].includes(type)) {
+    if (!VALID_TYPES.has(type)) {
       return Response.json(
-        { error: "Invalid type. Must be: summary, explain, quiz, mindmap, flashcards, or keypoints." },
+        {
+          error:
+            "Invalid type. Must be: summary, explain, quiz, mindmap, flashcards, or keypoints.",
+        },
         { status: 400 }
       );
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-    const promptText = buildPrompt(type, !!fileBase64);
-
-    let aiResult;
-
-    if (fileBase64) {
-      aiResult = await generateWithRetry(model, [
-        { inlineData: { data: fileBase64, mimeType: fileMimeType } },
-        promptText,
-      ]);
-    } else {
-      aiResult = await generateWithRetry(model, `${promptText}${content.trim()}`);
+    if (![PRIMARY_ENGINE, BACKUP_ENGINE].includes(modelPreference)) {
+      return Response.json(
+        { error: "Invalid AI engine selection." },
+        { status: 400 }
+      );
     }
 
-    const text = aiResult.response.text();
-    return Response.json({ result: text });
+    if (fileBase64 && modelPreference === BACKUP_ENGINE && fileMimeType === "application/pdf") {
+      return Response.json(
+        {
+          error:
+            "Focus AI currently supports typed notes and uploaded images. For PDF documents, switch to Spark AI.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const payload = { type, content, fileBase64, fileMimeType };
+
+    if (modelPreference === BACKUP_ENGINE) {
+      const result = await generateWithGroq(payload);
+      return Response.json({ result });
+    }
+
+    try {
+      const result = await generateWithGemini(payload);
+      return Response.json({ result });
+    } catch (primaryError) {
+      if (fileBase64 || !hasGroqKey()) {
+        throw primaryError;
+      }
+
+      console.warn("Primary AI engine failed. Falling back to backup AI engine.", primaryError);
+      const result = await generateWithGroq(payload);
+      return Response.json({ result });
+    }
   } catch (error) {
-    console.error("Gemini API Error:", error);
+    console.error("AI route error:", error);
 
     const status = extractStatusCode(error);
+
     if (status === 429 || status === 503) {
       return Response.json(
         {
@@ -198,8 +338,8 @@ export async function POST(request) {
     }
 
     return Response.json(
-      { error: "Failed to generate a response. Please try again." },
-      { status: 500 }
+      { error: error.message || "Failed to generate a response. Please try again." },
+      { status: status && status >= 400 ? status : 500 }
     );
   }
 }

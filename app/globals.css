@@ -730,6 +730,78 @@ label,
   word-break: break-word;
 }
 
+.rich-output {
+  color: var(--text-primary);
+  font-size: 16px;
+  line-height: 1.85;
+  letter-spacing: -0.01em;
+  word-break: break-word;
+}
+
+.rich-output > * + * {
+  margin-top: 18px;
+}
+
+.rich-output h1,
+.rich-output h2,
+.rich-output h3 {
+  font-family: 'Outfit', sans-serif;
+  color: var(--text-primary);
+  line-height: 1.12;
+  letter-spacing: -0.04em;
+}
+
+.rich-output h1 {
+  font-size: clamp(26px, 3vw, 34px);
+  margin-top: 6px;
+}
+
+.rich-output h2 {
+  font-size: clamp(21px, 2.5vw, 27px);
+}
+
+.rich-output h3 {
+  font-size: 18px;
+}
+
+.rich-output p {
+  color: color-mix(in srgb, var(--text-primary) 94%, var(--text-secondary));
+}
+
+.rich-output ul,
+.rich-output ol {
+  padding-left: 1.3rem;
+  display: grid;
+  gap: 10px;
+}
+
+.rich-output li::marker {
+  color: var(--accent-1);
+}
+
+.rich-output strong {
+  color: var(--text-primary);
+  font-weight: 800;
+}
+
+.rich-output code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.92em;
+  color: #c7d2fe;
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.18);
+  border-radius: 8px;
+  padding: 2px 7px;
+}
+
+.rich-output blockquote {
+  padding: 14px 16px 14px 18px;
+  border-left: 3px solid var(--accent-1);
+  background: rgba(99, 102, 241, 0.08);
+  border-radius: 0 14px 14px 0;
+  color: var(--text-secondary);
+}
+
 /* ─── Quiz Styles ─── */
 .quiz-list {
   display: flex;

@@ -6,7 +6,10 @@ Create a local `.env.local` file with:
 
 ```bash
 GEMINI_API_KEY=your_gemini_api_key_here
+GROQ_API_KEY=your_groq_api_key_here
 ```
+
+The app uses a primary AI engine plus an optional backup text engine. In the UI these appear as branded StudyMate engine names rather than provider names.
 
 ## Getting Started
 
@@ -33,7 +36,7 @@ This app is a good fit for Vercel because it uses Next.js with an API route.
 1. Push this project to GitHub.
 2. Create a free account on Vercel.
 3. Import the GitHub repository into Vercel.
-4. Add `GEMINI_API_KEY` in the Vercel project environment variables.
+4. Add `GEMINI_API_KEY` and `GROQ_API_KEY` in the Vercel project environment variables.
 5. Deploy.
 
 After that, your normal workflow is:

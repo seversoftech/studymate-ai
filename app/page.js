@@ -6,6 +6,7 @@ import TypingAnimation from './components/TypingAnimation';
 import Header from './components/Header';
 import MermaidChart from './components/MermaidChart';
 import FlashcardOutput from './components/FlashcardOutput';
+import RichTextOutput from './components/RichTextOutput';
 import { LUCKY_TOPICS } from './data/luckyTopics';
 import { getStoredStats } from './lib/stats';
 
@@ -60,6 +61,21 @@ const ACTION_META = {
   },
 };
 
+const MODEL_OPTIONS = [
+  {
+    id: 'spark',
+    name: 'Spark AI',
+    blurb: 'Balanced, fast, and upload-friendly',
+    icon: '✨',
+  },
+  {
+    id: 'focus',
+    name: 'Focus AI',
+    blurb: 'Sharper text reasoning for typed notes',
+    icon: '🧠',
+  },
+];
+
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf'];
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
@@ -72,6 +88,10 @@ function formatBytes(bytes) {
 function FileTypeIcon({ mimeType }) {
   if (mimeType === 'application/pdf') return <span className="file-type-icon pdf">PDF</span>;
   return <span className="file-type-icon img">IMG</span>;
+}
+
+function isPdfFile(file) {
+  return file?.type === 'application/pdf';
 }
 
 export default function HomePage() {
@@ -88,6 +108,7 @@ export default function HomePage() {
   const [listening, setListening] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [theme, setTheme] = useState('dark');
+  const [modelPreference, setModelPreference] = useState('spark');
 
   const recognitionRef = useRef(null);
   const outputRef = useRef(null);
@@ -100,6 +121,11 @@ export default function HomePage() {
       (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
     setTheme(savedTheme);
     document.documentElement.setAttribute('data-theme', savedTheme);
+
+    const savedModelPreference = localStorage.getItem('model_preference');
+    if (savedModelPreference && MODEL_OPTIONS.some((option) => option.id === savedModelPreference)) {
+      setModelPreference(savedModelPreference);
+    }
   }, []);
 
   const toggleTheme = useCallback(() => {
@@ -108,6 +134,17 @@ export default function HomePage() {
     localStorage.setItem('theme', newTheme);
     document.documentElement.setAttribute('data-theme', newTheme);
   }, [theme]);
+
+  const handleModelPreference = useCallback((nextModel) => {
+    if (nextModel === 'focus' && inputMode === 'file' && isPdfFile(uploadedFile)) {
+      setError('Focus AI currently supports typed notes and uploaded images, not PDFs.');
+      return;
+    }
+
+    setModelPreference(nextModel);
+    localStorage.setItem('model_preference', nextModel);
+    setError(null);
+  }, [inputMode, uploadedFile]);
 
   // ── Lucky logic ─────────────────────────────────────────────────────────────
   const handleLucky = useCallback(() => {
@@ -140,10 +177,14 @@ export default function HomePage() {
       return;
     }
     setUploadedFile(file);
+    if (isPdfFile(file) && modelPreference === 'focus') {
+      setModelPreference('spark');
+      localStorage.setItem('model_preference', 'spark');
+    }
     setError(null);
     setResult(null);
     setFlashcardStorageKey(null);
-  }, []);
+  }, [modelPreference]);
 
   const handleDrop = useCallback((e) => {
     e.preventDefault();
@@ -237,12 +278,13 @@ export default function HomePage() {
         const fd = new FormData();
         fd.append('type', type);
         fd.append('file', uploadedFile);
+        fd.append('modelPreference', modelPreference);
         res = await fetch('/api/ai', { method: 'POST', body: fd });
       } else {
         res = await fetch('/api/ai', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type, content: content.trim() }),
+          body: JSON.stringify({ type, content: content.trim(), modelPreference }),
         });
       }
 
@@ -269,7 +311,7 @@ export default function HomePage() {
     } finally {
       setLoading(false);
     }
-  }, [content, inputMode, uploadedFile, saveToHistory, updateStats]);
+  }, [content, inputMode, modelPreference, uploadedFile, saveToHistory, updateStats]);
 
   // ── Copy ────────────────────────────────────────────────────────────────────
   const handleCopy = useCallback(() => {
@@ -438,6 +480,41 @@ export default function HomePage() {
                 </button>
               </div>
 
+              <div className="model-switcher">
+                <div className="model-switcher-copy">
+                  <span className="model-kicker">AI Engine</span>
+                  <p className="model-helper">
+                    Pick the thinking style you want. Spark AI automatically falls back to a backup engine for text if the primary one is unavailable.
+                  </p>
+                </div>
+                <div className="model-grid">
+                  {MODEL_OPTIONS.map((option) => {
+                    const isDisabled = inputMode === 'file' && isPdfFile(uploadedFile) && option.id === 'focus';
+                    return (
+                      <button
+                        key={option.id}
+                        type="button"
+                        className={`model-card ${modelPreference === option.id ? 'active' : ''}`}
+                        onClick={() => handleModelPreference(option.id)}
+                        disabled={isDisabled}
+                        title={isDisabled ? 'Focus AI currently supports images and typed notes, not PDFs' : option.name}
+                      >
+                        <span className="model-icon">{option.icon}</span>
+                        <span className="model-name">{option.name}</span>
+                        <span className="model-desc">{option.blurb}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                {inputMode === 'file' && (
+                  <p className="model-mode-note">
+                    {isPdfFile(uploadedFile)
+                      ? 'PDF uploads currently run through Spark AI. Focus AI supports typed notes and uploaded images.'
+                      : 'Uploaded images can use either AI engine. PDF uploads currently run through Spark AI.'}
+                  </p>
+                )}
+              </div>
+
               <div className="input-field-wrapper">
                 {inputMode === 'text' && (
                   <div className="text-input-area">
@@ -531,6 +608,7 @@ export default function HomePage() {
                 <div className="output-header advanced">
                   <div className="output-badge-group">
                     <span className={`output-badge ${activeType}`}>{meta.icon} {meta.badgeLabel}</span>
+                    <span className="output-kicker">StudyMate Result</span>
                     <h3 className="output-title">{meta.title}</h3>
                   </div>
                   <div className="output-actions">
@@ -550,7 +628,7 @@ export default function HomePage() {
                       ? <FlashcardOutput text={result} storageKey={flashcardStorageKey} />
                       : activeType === 'mindmap'
                         ? <MermaidChart chart={result} />
-                        : <div className="output-text normal">{result}</div>
+                        : <RichTextOutput text={result} className="result-rich-output" />
                   }
                 </div>
               </div>
@@ -651,6 +729,19 @@ export default function HomePage() {
         .input-tab.modern { flex: 1; border: none; background: transparent; color: var(--text-muted); padding: 12px; font-size: 14px; font-weight: 700; border-radius: 14px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .input-tab.modern.active { background: var(--bg-primary); color: var(--text-primary); box-shadow: var(--shadow-sm); }
         .tab-icon { font-size: 16px; }
+        .model-switcher { margin: 8px 8px 0; padding: 18px; border-radius: 18px; border: 1px solid var(--border); background: rgba(255, 255, 255, 0.02); }
+        .model-switcher-copy { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+        .model-kicker { font-size: 11px; font-weight: 800; letter-spacing: 1.6px; text-transform: uppercase; color: var(--accent-1); }
+        .model-helper { font-size: 13px; line-height: 1.5; color: var(--text-secondary); }
+        .model-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .model-card { border: 1px solid var(--border); background: var(--bg-card); border-radius: 16px; padding: 14px; text-align: left; display: flex; flex-direction: column; gap: 6px; cursor: pointer; transition: all 0.2s; color: var(--text-primary); }
+        .model-card:hover:not(:disabled) { border-color: var(--border-active); background: var(--bg-card-hover); transform: translateY(-1px); }
+        .model-card.active { border-color: var(--accent-1); box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.16); background: rgba(99, 102, 241, 0.08); }
+        .model-card:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .model-icon { font-size: 20px; }
+        .model-name { font-size: 14px; font-weight: 800; }
+        .model-desc { font-size: 12px; line-height: 1.45; color: var(--text-muted); }
+        .model-mode-note { margin-top: 12px; font-size: 12px; color: var(--text-muted); }
 
         .main-textarea.modern { width: 100%; min-height: 320px; background: transparent; border: none; color: var(--text-primary); padding: 24px; font-size: 16px; line-height: 1.6; resize: none; outline: none; }
         .textarea-controls { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; border-top: 1px solid var(--border); }
@@ -681,24 +772,24 @@ export default function HomePage() {
         .suite-label { font-size: 14px; font-weight: 700; color: var(--text-primary); }
         .suite-desc { font-size: 11px; color: var(--text-muted); }
 
-        .output-card.advanced { background: var(--bg-card); border: 1px solid var(--border); border-radius: 28px; overflow: hidden; box-shadow: var(--shadow-md); position: sticky; top: 20px; }
-        .output-header.advanced { padding: 24px 32px; background: rgba(255, 255, 255, 0.01); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        .output-badge-group { display: flex; flex-direction: column; gap: 6px; }
-        .output-badge { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-1); background: rgba(99, 102, 241, 0.1); padding: 4px 12px; border-radius: 20px; width: fit-content; }
+        .output-card.advanced { background: linear-gradient(180deg, color-mix(in srgb, var(--bg-card) 96%, rgba(99, 102, 241, 0.05)), var(--bg-card)); border: 1px solid var(--border); border-radius: 28px; overflow: hidden; box-shadow: var(--shadow-md); position: sticky; top: 20px; }
+        .output-header.advanced { padding: 28px 32px 24px; background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01)); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+        .output-badge-group { display: flex; flex-direction: column; gap: 10px; max-width: 70%; }
+        .output-badge { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-1); background: rgba(99, 102, 241, 0.1); padding: 5px 12px; border-radius: 999px; width: fit-content; }
         .output-badge.explain { color: #10b981; background: rgba(16, 185, 129, 0.1); }
         .output-badge.quiz { color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
         .output-badge.flashcards { color: #ec4899; background: rgba(236, 72, 153, 0.12); }
         .output-badge.keypoints { color: #2563eb; background: rgba(37, 99, 235, 0.12); }
         .output-badge.mindmap { color: #06b6d4; background: rgba(6, 182, 212, 0.1); }
+        .output-kicker { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--text-muted); }
         
-        .output-title { font-size: 18px; font-weight: 800; font-family: 'Outfit', sans-serif; }
+        .output-title { font-size: clamp(24px, 3.2vw, 32px); font-weight: 800; line-height: 1.08; letter-spacing: -0.04em; font-family: 'Outfit', sans-serif; }
         .output-actions { display: flex; gap: 8px; }
         .out-action-btn { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-card); display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; transition: all 0.2s; color: var(--text-muted); }
         .out-action-btn:hover { border-color: var(--border-active); color: var(--text-primary); transform: translateY(-2px); }
         .out-action-btn.active { color: var(--accent-1); border-color: var(--accent-1); background: rgba(99, 102, 241, 0.1); }
 
-        .output-body.advanced { padding: 32px; }
-        .output-text.normal { font-size: 16px; line-height: 1.8; color: var(--text-primary); white-space: pre-wrap; }
+        .output-body.advanced { padding: 30px 32px 34px; }
 
         /* Shimmer Loading */
         .loading-shimmer-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 28px; padding: 40px; display: flex; flex-direction: column; gap: 16px; }
@@ -732,6 +823,7 @@ export default function HomePage() {
           .hero-title.modern { font-size: 48px; }
           .hero-advanced { padding: 60px 0 40px; }
           .output-card.advanced { position: static; }
+          .model-grid { grid-template-columns: 1fr; }
         }
       `}</style>
     </div>

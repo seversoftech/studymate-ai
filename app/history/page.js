@@ -5,6 +5,7 @@ import Header from '../components/Header';
 import QuizOutput from '../components/QuizOutput';
 import MermaidChart from '../components/MermaidChart';
 import FlashcardOutput from '../components/FlashcardOutput';
+import RichTextOutput from '../components/RichTextOutput';
 import { DEFAULT_STATS, getStoredStats } from '../lib/stats';
 import Link from 'next/link';
 
@@ -264,6 +265,8 @@ export default function HistoryPage() {
                       <span className={`output-type-badge ${selectedItem.type}`}>
                         {selectedItem.type === 'summary' ? '📝' : selectedItem.type === 'explain' ? '🎓' : selectedItem.type === 'quiz' ? '❓' : selectedItem.type === 'flashcards' ? '🃏' : '🕸️'} {selectedItem.title}
                       </span>
+                      <span className="preview-kicker">Saved Study Record</span>
+                      <h1 className="preview-main-title">{selectedItem.title}</h1>
                       <h2>Source Material</h2>
                     </div>
                     <div className="preview-actions">
@@ -304,7 +307,7 @@ export default function HistoryPage() {
                           />
                         : selectedItem.type === 'mindmap'
                         ? <MermaidChart chart={selectedItem.result} />
-                        : <div className="output-text" style={{ padding: 0 }}>{selectedItem.result}</div>
+                        : <RichTextOutput text={selectedItem.result} className="history-rich-output" />
                       }
                     </div>
                   </div>
@@ -407,11 +410,14 @@ export default function HistoryPage() {
         .preview-placeholder { height: 100%; border: 2px dashed var(--border); border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px; color: var(--text-muted); }
         .preview-placeholder h3 { font-size: 18px; margin-bottom: 8px; color: var(--text-secondary); }
 
-        .preview-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 24px; overflow: hidden; animation: fadeIn 0.3s ease; height: fit-content; max-height: 90vh; display: flex; flex-direction: column; }
+        .preview-card { background: linear-gradient(180deg, color-mix(in srgb, var(--bg-card) 96%, rgba(99, 102, 241, 0.05)), var(--bg-card)); border: 1px solid var(--border); border-radius: 24px; overflow: hidden; animation: fadeIn 0.3s ease; height: fit-content; max-height: 90vh; display: flex; flex-direction: column; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        .preview-header { padding: 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-start; }
-        .preview-title-group h2 { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 8px; }
+        .preview-header { padding: 28px 24px 22px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01)); }
+        .preview-title-group { display: flex; flex-direction: column; gap: 8px; max-width: 72%; }
+        .preview-kicker { font-size: 11px; text-transform: uppercase; letter-spacing: 0.22em; color: var(--text-muted); }
+        .preview-main-title { font-size: clamp(24px, 3vw, 32px); line-height: 1.08; letter-spacing: -0.04em; font-weight: 800; color: var(--text-primary); }
+        .preview-title-group h2 { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
         .preview-actions { display: flex; gap: 8px; }
         .preview-btn { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-card); display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; transition: all 0.2s; }
         .preview-btn:hover { border-color: var(--border-active); background: var(--bg-card-hover); transform: translateY(-2px); }
@@ -419,9 +425,9 @@ export default function HistoryPage() {
         .preview-btn.close { color: var(--text-muted); }
         .preview-btn.close:hover { color: #ef4444; border-color: #ef4444; }
 
-        .preview-body { padding: 24px; overflow-y: auto; flex: 1; }
-        .preview-source-text { padding: 16px; background: rgba(255, 255, 255, 0.02); border-left: 3px solid var(--border); font-size: 14px; font-style: italic; color: var(--text-secondary); line-height: 1.6; margin-bottom: 24px; border-radius: 0 8px 8px 0; }
-        .preview-divider { height: 1px; background: var(--border); margin: 32px 0; position: relative; }
+        .preview-body { padding: 26px 24px 30px; overflow-y: auto; flex: 1; }
+        .preview-source-text { padding: 18px 18px 18px 20px; background: rgba(255, 255, 255, 0.03); border-left: 3px solid rgba(255, 255, 255, 0.12); font-size: 15px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 28px; border-radius: 0 14px 14px 0; }
+        .preview-divider { height: 1px; background: var(--border); margin: 34px 0; position: relative; }
         .preview-divider::after { content: 'AI Result'; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); background: var(--bg-card); padding: 0 16px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); }
 
         .footer-v2 { border-top: none; padding: 0; margin-top: 0; }
